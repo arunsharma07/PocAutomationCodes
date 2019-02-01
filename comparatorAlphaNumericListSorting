@@ -1,0 +1,29 @@
+public static void main(String[] args) {
+	ArrayList<String> myStr = new ArrayList<String>();
+	myStr.add("D1");
+	myStr.add("K3");
+	myStr.add("A3");
+	myStr.add("S4");
+	myStr.add("S1");
+	myStr.add("A1");
+	myStr.add("S3");
+	myStr.add("B6");
+	myStr.add("S2");
+	myStr.add("A2");
+	myStr.add("B1");
+	myStr.add("C1");
+  
+  // first way is to declare an instance of comparator and set the sorting rule in it and using it for performing the sort
+	Comparator	stringComparator=Comparator.comparing(s -> s.toString().replaceAll("\\d", "")).
+                                thenComparingInt(s -> Integer.parseInt(s.toString().replaceAll("\\D", "")));
+  Collections.sort(myStr,stringComparator);
+  
+  
+  // second way is to directly sort the list by defining sorting rules using comparator in the sort method.
+	myStr.sort(Comparator.comparing(s -> s.toString().replaceAll("\\d", "")).thenComparingInt(s -> Integer.parseInt(s.toString().replaceAll("\\D", ""))));
+	
+	
+	System.out.println(myStr);
+  
+ //     Output for above code for the declared array List will be:
+//      [A1, A2, A3, B1, B6, C1, D1, K3, S1, S2, S3, S4]
