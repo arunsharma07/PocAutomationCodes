@@ -1,0 +1,17 @@
+Steps to Launch/Execute Post Request using HTTPClient Library:
+
+1. Store your JSON Post Request as a String in the Properties file (.properties)
+2. Create an object of Input Stream to read the created properties file (input = new FileInputStream("<path of prop file>"))
+3. Load the properties file to access service (prop.load(input)) 
+4. Create an object of JSONObject to convert String Service format to Json (jsonObj = new JSONObject(prop.getProperty("reqname"))
+5. Create an object of HTTPPost to set endpoint URL and setting the entity data and content type.
+    HttpPost post = new HttpPost("<endPointURL>");
+		StringEntity getPriceRequest = new StringEntity(prop.getProperty("getpriceRequest"));
+		getPriceRequest.setContentType("application/json");
+		post.setEntity(getPriceRequest);
+6. Create an object of HTTPResponse to store the result of the execution of the Request.
+    HttpResponse response = cl.execute(post);
+7. Convert the returned response to String
+    String responseJson = EntityUtils.toString(response.getEntity());
+8. Converting the Response in String format to JsonData
+			JSONObject jsonData = new JSONObject(responseJson);
