@@ -1,0 +1,9 @@
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("device", "Android");
+        capabilities.setCapability(CapabilityType.BROWSER_NAME, ""); //Name of mobile web browser to automate. empty if automating an app 
+        capabilities.setCapability(CapabilityType.VERSION, "4.4");
+        capabilities.setCapability(CapabilityType.PLATFORM, "Android");
+        capabilities.setCapability("app-package", "com.myapp"); //Replace with your app's package
+        capabilities.setCapability("app-activity", ".myapp"); //Replace with app's Activity
+        driver = new RemoteWebDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+    }
