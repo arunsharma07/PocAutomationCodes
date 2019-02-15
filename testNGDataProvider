@@ -1,0 +1,57 @@
+In the same class:Data provider is used when u have to pass more than one data to the test case.
+
+ @Test(dataProvider="SearchProvider")
+    public void testMethod(String author,String searchKey) 
+
+/**
+     * @return Object[][] where first column contains 'author'
+     * and second column contains 'searchKey'
+     */
+
+    @DataProvider(name="SearchProvider")
+    public Object[][] getDataFromDataprovider(){
+    return new Object[][] 
+    	{
+            { "Guru99", "India" },
+            { "Krishna", "UK" },
+            { "Bhupesh", "USA" }
+        };
+
+    }
+	
+In different class:
+ @Test(dataProvider="SearchProvider",dataProviderClass=DataproviderClass.class)
+    public void testMethod(String author,String searchKey)
+	
+Class in which dataProvider is defined: (In different class method data provided must be static)
+public class DataproviderClass {
+        @DataProvider(name="SearchProvider")
+        public static Object[][] getDataFromDataprovider(){
+            return new Object[][] {
+                { "Guru99", "India" },
+                { "Krishna", "UK" },
+                { "Bhupesh", "USA" }
+            };  
+}}
+
+TesNg.xml for Parametrization:  (parameterization is ok if you are passing only one value in your test case for more than one, we use data provider)
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="TestSuite" thread-count="3" >
+<parameter name="author" value="Guru99" />
+<parameter name="searchKey" value="India" />
+<test name="testGuru">
+<parameter name="searchKey" value="UK" />
+<classes>
+<class name="parameters.ParameterWithTestNGXML">
+</class>
+</classes>
+</test>
+</suite>
+
+Test method using parameterization will be like
+ @Test
+    @Parameters({"author","searchKey"})
+    public void testParameterWithXML( @Optional("Abc") String author,String searchKey) throws InterruptedException{
+
+      
