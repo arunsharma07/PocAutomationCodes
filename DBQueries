@@ -1,0 +1,29 @@
+
+select  /*+ INDEX(ndc F_PHARMACY_PRODUCT_XREF_IDX2) */ 
+                    prd.prod_sk,
+                                prd.product_id,
+                                prd.product_id_qlfr_cd,
+                                prd.gpi14,
+                                prd.product_name,
+                                prd.label_name,
+                                prd.rx_otc_cd,
+                                prd.maintenance_drug_ind,
+                                prd.multi_source_cd,
+                                prd.dosage_form_cd,
+                                prd.package_size,
+                                prd.package_size_uom,
+                                prd.package_quantity,
+                                prd.unbreakable_ind,
+						        ndc.u_c_unit_cost,
+						        ndc.sub_ingred_unit_cost
+               from f_pharmacy_product_xref ndc
+                        join d_medispan_product prd
+                           on prd.product_id = ndc.product_id
+                              and prd.multi_source_cd = 'O'
+                              and prd.active_ind = 'Y' 
+                              and prd.effective_dt <= trunc(sysdate)
+                              and prd.obsolete_dt >= (trunc(sysdate) - 180)
+              where ndc.phr_sk = '224403'
+                    and ndc.gpi14 = '21200040402210'
+					and ndc.lob_cd = 'M'
+                    and ndc.generic_ind = 'O';
