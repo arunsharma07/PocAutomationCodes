@@ -1,22 +1,5 @@
 
-select  /*+ INDEX(ndc F_PHARMACY_PRODUCT_XREF_IDX2) */ 
-                    prd.prod_sk,
-                                prd.product_id,
-                                prd.product_id_qlfr_cd,
-                                prd.gpi14,
-                                prd.product_name,
-                                prd.label_name,
-                                prd.rx_otc_cd,
-                                prd.maintenance_drug_ind,
-                                prd.multi_source_cd,
-                                prd.dosage_form_cd,
-                                prd.package_size,
-                                prd.package_size_uom,
-                                prd.package_quantity,
-                                prd.unbreakable_ind,
-						        ndc.u_c_unit_cost,
-						        ndc.sub_ingred_unit_cost
-               from f_pharmacy_product_xref ndc
+select prd.prod_sk,prd.product_id,prd.product_id_qlfr_cd, ndc.u_c_unit_cost, from f_pharmacy_product_xref ndc
                         join d_medispan_product prd
                            on prd.product_id = ndc.product_id
                               and prd.multi_source_cd = 'O'
