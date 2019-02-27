@@ -1,0 +1,33 @@
+Scenario Outline Example:
+Feature: test Login Application
+Scenario Outline: test Login to BPE admin application 
+    Given I launch application using url "<url>"
+    And user enter the credentials
+    Then user verify the "<user_id>" page is "<password>"
+    Examples:
+    | user_id | password | url |
+    | arsh    | pwd      | abc.com | 
+    
+    @Then("^user verify the \"([^\"]*)\" page is \"([^\"]*)\"$")
+public void user_verify_the_page_is(String arg1, String arg2) throws Throwable {
+    // Write code here that turns the phrase above into concrete actions
+    throw new PendingException();
+}
+======================================================================================================================================
+Data Table Example:
+Feature: test Login Application
+Scenario: test Login to BPE admin application 
+    Given I launch application using url 
+    And user enter the credentials
+    | arsh| password|
+    Then user verify the page 
+   
+   @Given("^user enter the credentials$")
+public void user_enter_the_credentials(DataTable usercredentials) throws Throwable {
+      List<List<String>> data = usercredentials.raw();
+		  driver.findElement(By.id("log")).sendKeys(data.get(0).get(0)); 
+	    driver.findElement(By.id("pwd")).sendKeys(data.get(0).get(1));
+	    driver.findElement(By.id("login")).click();
+    throw new PendingException();
+}
+=====================================================================================================================================
