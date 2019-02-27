@@ -1,13 +1,67 @@
-Because the HTTP GET method is specified as idempotent, a GET request, by specification, can be resubmitted with the assumption that it will not change anything on the server. This is not the case for a HTTP POST which by specification can change the status of the application running on the server.
+GET is one of the most common HTTP methods.
 
-So, by specification, one can perform an HTTP GET against a page N number of times without worrying of being changing its status.
+Note that the query string (name/value pairs) is sent in the URL of a GET request:
 
-Not respecting the specification may have various undesired results. For example, Web crawlers follow through GET request to index a site, but not POST. If you allowed an HTTP GET request to make changes to the database, you can easily understand the undesired implication it can have.
+/test/demo_form.php?name1=value1&name2=value2
+Some other notes on GET requests:
 
-Respecting a specification is like respecting an agreement between your service or website and an array of different consumers which can be normal users' browsers but also other services like web crawlers.
+GET requests can be cached
+GET requests remain in the browser history
+GET requests can be bookmarked
+GET requests should never be used when dealing with sensitive data
+GET requests have length restrictions
+GET requests is only used to request data (not modify)
 
-You could build a site that uses a GET to insert a record, but you should also expect that whatever is built around to consume your site is functioning with the assumption that you are respecting the agreement.
+The POST Method
+POST is used to send data to a server to create/update a resource.
+The data sent to the server with POST is stored in the request body of the HTTP request:
+POST /test/demo_form.php HTTP/1.1
+Host: w3schools.com
+name1=value1&name2=value2
+POST is one of the most common HTTP methods.
+Some other notes on POST requests:
+POST requests are never cached
+POST requests do not remain in the browser history
+POST requests cannot be bookmarked
+POST requests have no restrictions on data length
+The PUT Method
+PUT is used to send data to a server to create/update a resource.
 
-As a last example, web browsers warn users when they try to refresh a page that was reached by a HTTP POST request warning that some data might be resubmitted. You do not get that layer of protection built-in browsers if the page is reached by a HTTP GET request.
+The difference between POST and PUT is that PUT requests are idempotent. That is, calling the same PUT request multiple 
+times will always produce the same result. In contrast, calling a POST request repeatedly have side effects of
+creating the same resource multiple times.
 
-You can read more here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+The HEAD Method
+HEAD is almost identical to GET, but without the response body.
+
+In other words, if GET /users returns a list of users, then HEAD /users will make the same request but will not return 
+the list of users.
+
+HEAD requests are useful for checking what a GET request will return before actually making a GET request - like before 
+ownloading a large file or response body.
+
+The DELETE Method
+The DELETE method deletes the specified resource.
+
+The OPTIONS Method
+The OPTIONS method describes the communication options for the target resource.
+
+Compare GET vs. POST
+The following table compares the two HTTP methods: GET and POST.
+
+ 	GET	POST
+BACK button/Reload	Harmless	Data will be re-submitted (the browser should alert the user that the data are about to be re-submitted)
+Bookmarked	Can be bookmarked	Cannot be bookmarked
+Cached	Can be cached	Not cached
+Encoding type	application/x-www-form-urlencoded	application/x-www-form-urlencoded or multipart/form-data. Use multipart encoding 
+for binary data
+History	Parameters remain in browser history	Parameters are not saved in browser history
+Restrictions on data length	Yes, when sending data, the GET method adds the data to the URL; and the length of a URL is 
+limited (maximum URL length is 2048 characters)	No restrictions
+Restrictions on data type	Only ASCII characters allowed	No restrictions. Binary data is also allowed
+Security	GET is less secure compared to POST because data sent is part of the URL
+
+Never use GET when sending passwords or other sensitive information!	POST is a little safer than GET because the parameters 
+are not stored in browser history or in web server logs
+Visibility	Data is visible to everyone in the URL	Data is not displayed in the URL
+
