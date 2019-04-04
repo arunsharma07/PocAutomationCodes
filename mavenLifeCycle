@@ -1,3 +1,13 @@
+Two simple rules work for me for groupId and artifactId:
+
+1. reverse-domain-packages for groupId (since such are quite unique) with all the constrains regarding Java packages names
+2. project name as artifactId (keeping in mind that it should be jar-name friendly i.e. not contain characters that
+maybe invalid for a file name or just look weird)
+
+groupId : com.companyname.project
+artifactId : project
+version : 0.0.1
+
 validate - validate the project is correct and all necessary information is available
 compile - compile the source code of the project
 test - test the compiled source code using a suitable unit testing framework. These tests should not require the code be packaged or deployed
