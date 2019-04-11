@@ -1,0 +1,24 @@
+What is a Test Framework: A set of rules and guidelines which are helpful in test script creation and designing.
+It can also be considered a set of good practices and tools that helped testing persons to write and test functionalities
+more efficiently. It can be comprised of test-data handling methods and the results storing process. 
+Additionally, the set rules are not also mandatory to be followed, A QA professional can still use some of these
+rules and some of his own as per requirement. 
+
+What is TestNG Framework: This framework is inspired by JUnit and NUnit  and has many additional newer functionalities
+such as annotations and can enable a  script writer to run his code in a big thread-pool.
+Also can be called as a hybrid architecture because its a combination of two frameworks which are 
+Data-driven and Method-driver framework, Additionally the execution is controlled by its internal suite files which are comprised of  
+TestNG classes.
+ 
+Expanation of some terminologies can be given as :
+Suite: Suite in testNG is maintained and represented by a XML file, Also it is defined as <suite>
+Test : This can contains one or more classes which are to be executed and is defined as <test> in  a suite
+TestNG Class: Mandatory to contain atleast one of the Naaotations of testNG and contains methods to be executed , it is defined as <class>
+Test Method: @Test denotes the method which has a actual execution code
+ 
+Also Steps of execution: First of all @BeforeMethod is executed for every @Test in the class, after this all the test methods(@Test) will 
+start executing and at the end @aftermethod gets executed after every @Test method execution
+ 
+@BeforeMethod contains preconditions: which are like opening browser, navigation to desired URL and other navigational steps,
+@Test contains business logic or the actual test case or it can be said as they contains transactional steps
+@AfterMethod contains storing or recording of result data and closing of browser etc... 
