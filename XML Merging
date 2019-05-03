@@ -1,0 +1,230 @@
+package test.java.upoint_UPN_Scripts;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+public class Merge {
+	static String xmlFileName1 = System.getProperty("user.dir") + "\\src\\test\\java\\object\\repositories\\parent.xml";
+	static String xmlFileName2 = System.getProperty("user.dir") + "\\src\\test\\java\\object\\repositories\\child.xml";
+	
+	public static void main(String[] args) {
+		xmlMerging(xmlFileName1,xmlFileName2);
+	}
+	/**
+	 * Method to return the parent Object of the passed XML file
+	 * @param xmlFilePath
+	 * @return String list of Parent Object 
+	 * @throws Exception
+	 */
+	public static ArrayList<String> getParentObjectList(String xmlFilePath) throws Exception {
+		File fXmlFile = new File(xmlFilePath);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(fXmlFile);
+		doc.getDocumentElement().normalize();
+		NodeList nList = doc.getElementsByTagName("Object");
+		int length = nList.getLength();
+		ArrayList<String> parentNodes  = new ArrayList<String>(length);
+		for (int k = 0; k < length; k++) {
+			Node nNode1 = nList.item(k);
+			if (nNode1.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode1;
+				NodeList children = nNode1.getChildNodes();
+				if(children.getLength()>3) {
+					parentNodes.add(eElement.getAttribute("Name"));
+				}
+			}
+		}
+		return parentNodes;
+	}
+	
+	
+	/**
+	 * Method to compare the child nodes of parent nodes and update the change
+	 * @param parentXmlFilePath
+	 * @param toBeMergedFilePath2
+	 */
+	public static void xmlMerging(String parentXmlFilePath, String toBeMergedFilePath2) {
+		try {
+			
+			File fXmlFile = new File(parentXmlFilePath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			
+			File fXmlFile1 = new File(toBeMergedFilePath2);
+			DocumentBuilderFactory dbFactory1 = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder1 = dbFactory.newDocumentBuilder();
+			Document doc1 = dBuilder.parse(fXmlFile1);
+			doc1.getDocumentElement().normalize();
+		
+			ArrayList<String> MasterParent1 = getParentObjectList(parentXmlFilePath); // contains all the parent nodes of master XML
+			ArrayList<String> childParent2 = getParentObjectList(toBeMergedFilePath2); // contains all parent node of child xml
+			
+			MasterParent1.removeAll(childParent2);
+			if(MasterParent1.size()!=0) {
+				for(String s:childParent2) {
+					System.out.println("Child XML contains extra parent: "+s);
+					// want to stop execution or not
+					// your choice if you want to add missing parent
+				}
+			}
+			
+			int count = Math.max(MasterParent1.size(),childParent2.size());
+					
+			for (int j = 0; j < count; j++) {
+				
+				XPathExpression expr = xpath.compile("//Object[@Name='"+childParent2.get(j)+"']");
+				// getting child nodes of XML1
+				NodeList n1 = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+				NodeList objects = ((Element)n1.item(0)).getElementsByTagName("Object");
+				
+				NodeList n2 = (NodeList) expr.evaluate(doc1, XPathConstants.NODESET);
+				NodeList objects1 = ((Element)n2.item(0)).getElementsByTagName("Object");
+				
+				Map<String,String> childLocatorXML1 = getChildNodes(objects);
+				Map<String,String> childLocatorXML2 = getChildNodes(objects1);
+				
+				for(Map.Entry<String, String> m:childLocatorXML2.entrySet()) {	
+					String val=m.getValue();
+					System.out.println(childLocatorXML1.containsValue(m.getValue()));
+					if((childLocatorXML1.containsKey(m.getKey()))) {
+						System.out.println("this is xml2key "+m.getKey());
+						String value = (String)childLocatorXML1.get(m.getKey());
+						System.out.println("value from child xml: "+val);
+						System.out.println("value of parent  xml: "+value);
+						if(val.equals(value)==false) {
+							writeXML(parentXmlFilePath,objects,m.getKey(),doc,val);
+						}	
+					}
+				}
+		System.out.println("Updated/Merged XML is generated at location: "+parentXmlFilePath);
+			}	
+		}catch (Exception e) {
+			e.printStackTrace();
+		}	
+	}
+	
+	/**
+	 * method to return child node values of an Object i.e. locator and locator type with object Name
+	 * In Map,key is the locator and value is the type of locator
+	 * @param childLocatorObject
+	 * @return Map of locators and locator type
+	 */
+	public static Map<String, String> getChildNodes(NodeList childLocatorObject) {
+		Map<String,String> childLocators = new HashMap<String,String>(childLocatorObject.getLength());
+		for(int k=0;k<childLocatorObject.getLength();k++) {
+			Node objectNode = childLocatorObject.item(k);
+			NodeList def = ((Element)childLocatorObject.item(k)).getElementsByTagName("Def");
+			NodeList description = ((Element)def.item(0)).getElementsByTagName("Description");
+			NodeList locatorNode = description.item(0).getChildNodes();
+			 for(int i = 0; i < locatorNode.getLength(); i++) {
+		            Node current = locatorNode.item(i);
+		            String locator = null,locatorType = null;
+		            //Only want stuff from ELEMENT nodes
+		            if(current.getNodeType() == Node.ELEMENT_NODE) {
+		            	System.out.println(current.getNodeName()+": "+current.getTextContent().trim());
+		            	if(childLocators.containsKey(current.getTextContent().trim())==false) {
+		                childLocators.put(objectNode.getAttributes().getNamedItem("Name").getNodeValue(),current.getNodeName()+"||"+current.getTextContent().trim());
+		            	}
+		            	else {
+		            		for (Map.Entry<String, String> e : childLocators.entrySet()) {
+		            		     locator = e.getKey();
+		            		     locatorType = e.getValue();
+		            		}
+		            		System.out.println(locatorType+" Locator "+locator+" is repeating in Child Node "+objectNode.getAttributes().getNamedItem("Name").getNodeValue());
+		            		throw new RuntimeException();
+		            	}
+		            }
+		        }
+			}
+		return childLocators;
+	}
+	
+	/**
+	 * Method to overwrite or merge the xml differences/changes
+	 * @param childLocatorObject
+	 * @param childVal
+	 * @param doc
+	 * @param locator
+	 * @throws Exception
+	 */
+	public static void writeXML(String parentXML,NodeList childLocatorObject,String childVal,Document doc,String locator) throws Exception {
+		
+			for(int k=0;k<childLocatorObject.getLength();k++) {
+				Node objectNode = childLocatorObject.item(k);
+				if(objectNode.getAttributes().getNamedItem("Name").getNodeValue().equalsIgnoreCase(childVal)) {
+				NodeList def = ((Element)childLocatorObject.item(k)).getElementsByTagName("Def");
+				NodeList description = ((Element)def.item(0)).getElementsByTagName("Description");
+				NodeList locatorNode = description.item(0).getChildNodes();
+				 for(int i = 0; i < locatorNode.getLength(); i++) {
+					 Node current = locatorNode.item(i);
+			            //Only want stuff from ELEMENT nodes
+			            if(current.getNodeType() == Node.ELEMENT_NODE)
+			            { 
+			            	String[] locatorType = locator.split("\\|\\|");
+			            	// If parent child node not xpath and not equal
+			            	if(current.getNodeName().equalsIgnoreCase(locatorType[0])==false && current.getNodeName().equalsIgnoreCase("xpath")==false && locatorType[0].equalsIgnoreCase("xpath")==false) {
+			            		current.setTextContent("//*[@"+locatorType[0]+"="+""+current.getTextContent()+""+" || " +"@"+locatorType[0]+"="+locatorType[1]+"]");
+			            		doc.renameNode(current, null, "Xpath");
+			            	}
+			            	// If parent child node not equal and child node is xpath
+			            	else if(current.getNodeName().equalsIgnoreCase(locatorType[0])==false && locatorType[0].equalsIgnoreCase("xpath")==true) {
+			            		current.setTextContent(locatorType[1]+" | "+"//*[@"+current.getNodeName()+"="+current.getTextContent()+"]");
+			            		doc.renameNode(current, null, "Xpath");
+			            	}//If parent child node not equal and parent node is xpath
+			            	else if(current.getNodeName().equalsIgnoreCase(locatorType[0])==false && current.getNodeName().equalsIgnoreCase("xpath")==true) {
+			            		current.setTextContent(current.getTextContent()+" | "+"//*[@"+locatorType[0]+"="+locatorType[1]+"]");
+			            		doc.renameNode(current, null, "Xpath");
+			            	}//If parent child node equals and text content is not same
+			            	else if(current.getNodeName().equalsIgnoreCase(locatorType[0])==true && current.getTextContent().equals(locatorType[1])==false) {
+			            		// If parent and child node are xpath having different data
+			            		if(current.getNodeName().equalsIgnoreCase("xpath")||locatorType[0].equalsIgnoreCase("xpath")) {
+			            			current.setTextContent(current.getTextContent()+" | "+locatorType[1]);
+			            		}// If parent child node is not xpath but have different data
+			            		else{
+			            			current.setTextContent("//*[@"+locatorType[0]+"="+current.getTextContent()+" || " +"@"+locatorType[0]+"="+locatorType[1]+"]");
+			            			doc.renameNode(current, null, "Xpath");
+			            		}
+			            	}
+			            	
+			            }
+			            	 
+			        }
+				 	Transformer transformer = TransformerFactory.newInstance().newTransformer();
+					Result output = new StreamResult(parentXML);
+					Source input = new DOMSource(doc);
+					transformer.transform(input, output);	 
+				 }
+				
+			}
+			
+		
+	}			 
+				 
+	
+	
+}
