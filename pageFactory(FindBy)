@@ -1,0 +1,8 @@
+Difference between: 
+@FindBy(id = "foobar") WebElement foobar;     (without how)
+@FindBy(how = How.ID, using = "foobar") WebElement foobar;  (with how)
+
+Answer:
+Both are the same, the "How" can be used in other cases than finding elements. In general you can say:
+"I bought a porshe" and everybody understands, you bought a car brand porsche. or "I bought a car, brand porshe" and everybody understands, you bought a car brand porsche.
+If Porshe would manufacture planes and ships, than would be neccessary the second expresion.
