@@ -35,9 +35,6 @@ selutil = new SeleniumUtilies(xmlFileName1);
 			
 		  DesiredCapabilities capabilities = new DesiredCapabilities();
 		  capabilities.setCapability("deviceName", "emulator-5554");
-		  //capabilities.setCapability("app", "Chrome");
-		  //capabilities.setCapability(CapabilityType.BROWSER_NAME, "Chrome"); 
-		  //capabilities.setCapability(MobileCapabilityType.BROWSER_NAME, MobileBrowserType.BROWSER);
 		  capabilities.setCapability(CapabilityType.VERSION, "9.0");
 		  capabilities.setCapability(CapabilityType.PLATFORM_NAME, "Android");
 		  capabilities.setCapability("appPackage","com.android.chrome");
