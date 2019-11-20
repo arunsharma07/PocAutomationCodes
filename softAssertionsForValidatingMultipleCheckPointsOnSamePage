@@ -1,0 +1,120 @@
+package com.tccc.freestyle.automation.ui.crew;
+
+import com.tccc.freestyle.automation.ExecutionTarget;
+
+import org.assertj.core.api.SoftAssertions;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * This script verifies Portion Buttons Validation
+ * @author Shanthan
+ */
+public class ValidatePortionButtonFunctionality extends CUIAutomationTestCase {
+
+   private WebDriver driver;
+   private FOS fos;
+   private SoftAssertions assertions = new SoftAssertions();
+
+   @Before
+   public void setUp() throws Exception {
+      fos = UIUtil.getFos();
+      driver = UIUtil.createDriver();
+   }
+
+   /**
+    * Cleans up after the test
+    */
+   @After
+   public void tearDown() throws Exception {
+      // stop selenium and close the browser
+      UIUtil.closeDriver(driver);
+      assertions.assertAll();
+   }
+
+   @Override
+   public TestCaseMetadata getMetadata() {
+      TestCaseMetadata metadata = new TestCaseMetadata();
+      metadata.setTestCaseId("00000");
+      metadata.setCategory(FOSCategory.FOS_CORE);
+      metadata.setExecutionTarget(ExecutionTarget.SIMULATOR);
+      metadata.setTags(Arrays.asList("FOS-FullyAutomated"));
+      return metadata;
+   }
+
+   @Test
+   public void verifyPortionButtonsFunctionality(){
+
+      CrewServeHomePage page = UIUtil.navigateToCrewServe(fos,driver);
+
+      /*Retrieves list of Beverage brand and selects random Brand*/
+      List<String> brandList = page.getBrandsList();
+      int index = (int) (Math.random() * brandList.size());
+      String randomBrand = brandList.get(index);
+      page.selectBrand(randomBrand);
+      logger.logInfo("Selected Brand : "+ randomBrand);
+
+      /* Retrieves list of child beverages and selects random child beverage */
+      List<String> childBeverages = page.getChildBeverages();
+      logger.logInfo("There are " + childBeverages.size() + " child beverages for brand " + randomBrand);
+      int randomChildIndex = (int) (Math.random() * childBeverages.size());
+      String childBeverage = childBeverages.get(randomChildIndex);
+      logger.logInfo("Selecting child beverage : " + childBeverage);
+      page.selectChildBeverage(childBeverage);
+
+      /* Retrieves and Iterate list of available Portions */
+      List<WebElement> portions = page.getPortionButtons();
+      for(int i=1;i<portions.size()+1;i++) {
+
+         /* Fetch Beverage Portion Name and Volume from respective API*/
+         String apiPortionVolume = fos.crewServeApi().portions().
+               query("[? id == `"+i+"`].volume[] | [0]").toString();
+         logger.logInfo("Api Portion Volume: " + apiPortionVolume);
+         String apiPortionName = fos.crewServeApi().portions().
+               query("[? id == `"+i+"`].name[] | [0]").toString();
+         apiPortionName = apiPortionName.substring(1,apiPortionName.length()-1);
+
+         /* Validate UI portion name with API*/
+         String[] beveragePortionText = portions.get(i-1).getText().split("\n");
+         assertions.assertThat(apiPortionName).isEqualTo(beveragePortionText[0]);
+         logger.logPass(apiPortionName.equals(beveragePortionText[0]),
+               "Portion name matches with API",
+               "Portion name does not match with API");
+
+         /* Validate Portion Volume from UI after converting to ML matches with API*/
+         beveragePortionText[1]=beveragePortionText[1].substring(0,beveragePortionText[1].length()-3);
+         double beveragePortionVol=Double.parseDouble(beveragePortionText[1]);
+         beveragePortionVol = beveragePortionVol*29.5735;
+         Double apiPortionVol = Double.parseDouble(apiPortionVolume);
+         apiPortionVol = new BigDecimal(apiPortionVol).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
+         beveragePortionVol= new BigDecimal(beveragePortionVol).setScale(2, BigDecimal.ROUND_DOWN).doubleValue();
+         assertions.assertThat(apiPortionVol).isEqualTo(beveragePortionVol);
+         logger.logPass(apiPortionVol.equals(beveragePortionVol),
+               "Portion Volume from UI after converting to ML matches with API",
+               "Portion Volume from UI after converting to ML does not matches with API");
+
+         /* Validate Actual Volume Poured Matches With Portion Volume as per respective API*/
+         apiPortionVolume = fos.crewServeApi().portions().query("[? id == `"+i+"`].volume[] | [0]").toString();
+         //Creates a pour metrics with a custom name
+         String newMetrics = "testPourMetric";
+         fos.pourMetricsApi().addMetrics(newMetrics);
+         portions.get(i-1).click();
+         WaitUtil.waitForObjectUntilNotVisible(driver,page.getBtnStop(),20);
+         //Checks the metric created is populated with data and Matches With API Portion Volume
+         String actualVolumePoured = fos.pourMetricsApi().metrics(newMetrics).query("totalVolume").typed(String.class);
+         logger.logInfo("Actual Pour: " + actualVolumePoured);
+         assertions.assertThat((Double.parseDouble(actualVolumePoured))-(Double.parseDouble(apiPortionVolume))).isLessThan(20);
+         assertions.assertThat((Double.parseDouble(actualVolumePoured))-(Double.parseDouble(apiPortionVolume))).isGreaterThan(-20);
+         logger.logPass((Double.parseDouble(actualVolumePoured))-(Double.parseDouble(apiPortionVolume))<20
+               && (Double.parseDouble(actualVolumePoured))-(Double.parseDouble(apiPortionVolume))>-20,
+               "Actual Volume Poured Matches With API",
+               "Actual Volume Poured does not Match With API");
+      }
+   }
+}
