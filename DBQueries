@@ -1,3 +1,7 @@
+get nth max salary query
+
+https://www.programmerinterview.com/database-sql/find-nth-highest-salary-sql/ 
+
 
 select prd.prod_sk,prd.product_id,prd.product_id_qlfr_cd, ndc.u_c_unit_cost, from f_pharmacy_product_xref ndc
                         join d_medispan_product prd
